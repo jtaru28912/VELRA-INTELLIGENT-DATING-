@@ -25,6 +25,7 @@ export default function UnifiedInputPage() {
   const [activeTab, setActiveTab] = useState<'chat' | 'profile'>('chat');
   const [context, setContext] = useState(CONTEXTS[0].id);
   const [inputText, setInputText] = useState('');
+  const [persona, setPersona] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any>(null);
@@ -61,6 +62,7 @@ export default function UnifiedInputPage() {
             messages,
             images: selectedImages,
             context,
+            persona,
           }),
         });
         navigate('/result', { state: { result: response } });
@@ -215,6 +217,41 @@ export default function UnifiedInputPage() {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+
+          {/* Evaluation Goal & Context */}
+          <div className="px-8 pb-8 space-y-6">
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                <Target className="w-3 h-3 text-primary" />
+                Evaluation Goal
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                {['Serious Relationship', 'Casual / Hookup', 'Just Timepass', 'Testing the Vibe'].map((goal) => (
+                  <button
+                    key={goal}
+                    onClick={() => setPersona(prev => prev.includes(goal) ? prev : `${prev} [Goal: ${goal}]`.trim())}
+                    className="px-4 py-2 rounded-xl bg-white/40 border border-white text-[10px] font-black uppercase tracking-tighter hover:bg-primary/5 hover:border-primary/20 transition-all text-zinc-600"
+                  >
+                    {goal}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                <Sparkles className="w-3 h-3 text-primary" />
+                Partner Persona & Extra Context
+              </h3>
+              <input 
+                type="text"
+                value={persona}
+                onChange={(e) => setPersona(e.target.value)}
+                placeholder="e.g. She is introverted... My goal is a serious relationship..."
+                className="w-full bg-white/50 border border-zinc-100 rounded-2xl p-4 text-sm font-bold text-zinc-900 outline-none focus:border-primary/20 transition-all placeholder:text-zinc-300 shadow-inner"
+              />
+            </div>
           </div>
 
           {/* Footer Controls */}

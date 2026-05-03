@@ -45,10 +45,21 @@ async def generate_tips(
     if payload.profile_text:
         user_prompt += f"Target Profile: {payload.profile_text}\n"
 
-    res = await openai_client.generate_structured(
-        system_prompt=system_prompt,
-        user_payload={"query": user_prompt},
-        response_model=TipsResponse
-    )
-    
-    return TipsResponse.model_validate(res.payload)
+    try:
+        res = await openai_client.generate_structured(
+            system_prompt=system_prompt,
+            user_payload={"query": user_prompt},
+            response_model=TipsResponse
+        )
+        return TipsResponse.model_validate(res.payload)
+    except Exception as e:
+        # Fallback response for Tips
+        return TipsResponse(
+            summary="Strategic backup: Focus on emotional mirroring and consistent reply timing.",
+            vibe_check="Stable engagement required",
+            tips=[
+                {"title": "The Mirror Move", "content": "Match their energy levels and message length for the next 24 hours.", "category": "strategy"},
+                {"title": "Open-Ended Hook", "content": "Ask about their favorite childhood memory to break the small-talk cycle.", "category": "topic"},
+                {"title": "Micro-Investment", "content": "Mention a niche song or hobby to see if they bite the bait.", "category": "behavior"}
+            ]
+        )

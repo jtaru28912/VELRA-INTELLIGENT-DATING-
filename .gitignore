@@ -14,4 +14,7 @@ frontend/package-lock.json
 frontend/yarn-error.log
 frontend/package-lock.json
 
-
+frontend/.env
+frontend/env.ts
+*/.env
+/*.env

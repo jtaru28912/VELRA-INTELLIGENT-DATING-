@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:10000';
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem('velra_token');
@@ -21,8 +21,13 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
-    throw new Error(error.detail || 'API request failed');
+    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    const detail = typeof errorData.detail === 'string' 
+      ? errorData.detail 
+      : Array.isArray(errorData.detail)
+        ? errorData.detail.map((e: any) => e.msg).join(', ')
+        : JSON.stringify(errorData.detail);
+    throw new Error(detail || `Request failed with status ${response.status}`);
   }
 
   return response.json();

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 engine: AsyncEngine = create_async_engine(
     settings.database_url,
-    echo=True, # Enabled for deep debugging of DB issues
+    echo=False, # Silenced as per user request
     future=True,
     pool_pre_ping=True,
 )

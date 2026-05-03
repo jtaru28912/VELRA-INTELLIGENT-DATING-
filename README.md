@@ -14,32 +14,28 @@ Velra is a production-oriented FastAPI service for analyzing dating chat convers
 - Pydantic v2
 - passlib & PyJWT (Auth)
 
-## Setup
+## How to Run (Local Development)
 
-1. Create a virtual environment and ensure dependencies are installed via requirements.
-```bash
-python -m venv venv
-venv\Scripts\activate  # Windows
-# or source venv/bin/activate # Unix
+To start the backend and ensure there are no port conflicts on port `10000`:
+
+```powershell
+# Kill any process on port 10000 and start the server
+Get-NetTCPConnection -LocalPort 10000 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }; python -m uvicorn app.main:app --host 0.0.0.0 --port 10000 --reload
 ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
+To start the frontend:
+
+```powershell
+cd frontend
+npm install
+npm run dev
 ```
 
-3. Configure Environment Variables
-Copy `.env.example` to `.env`. Ensure the following keys are populated:
-- `DATABASE_URL`: async PostgreSQL connection string.
-- `REDIS_URL`: Redis cache URL.
-- `JWT_SECRET`: Secret Key for generation tokens.
-- `OPENAI_API_KEY`: Required for live analysis fallback instead of deterministic generation.
-- `USE_CHROMA_HTTP`: `true` connects to a Chroma HTTP service instance.
+## Setup & Configuration
 
-4. Start dependencies and API locally:
-```bash
-docker-compose up --build
-```
+1. **Environment Variables**: The project uses a root `.env` file for the backend and `frontend/.env` for the UI. Ensure `OPENAI_API_KEY` is set to use GPT-4o-mini.
+2. **Database**: Uses SQLite (`velra.db`) by default for local development.
+3. **AI Engine**: Optimized for OpenAI's `gpt-4o-mini`.
     
 ## API Endpoints
 

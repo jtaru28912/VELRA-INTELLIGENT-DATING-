@@ -118,7 +118,7 @@ class RedisCache:
     # Standalone utilities migrated from services/cache.py
     def generate_cache_key(self, user_id: str, messages: list[str]) -> str:
         import hashlib
-        input_str = str(user_id) + "".join(messages)
+        input_str = "v3" + str(user_id) + "".join(messages)
         return hashlib.md5(input_str.encode("utf-8")).hexdigest()
 
     async def check_rate_limit(self, user_id: str, limit: int = 20) -> None:

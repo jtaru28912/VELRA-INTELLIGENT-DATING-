@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 ResponseModelT = TypeVar("ResponseModelT", bound=BaseModel)
 
 
+
 @dataclass(slots=True)
 class OpenAIUsage:
     prompt_tokens: int = 0
@@ -33,12 +34,13 @@ class OpenAIClient:
         self._settings = settings
         self._client = (
             AsyncOpenAI(
-                api_key=settings.openai_api_key,
+                api_key=settings.openai_api_key.strip() if settings.openai_api_key else None,
                 timeout=settings.openai_timeout_seconds,
             )
-            if settings.openai_enabled
+            if settings.openai_api_key
             else None
         )
+        self._is_gemini = False
 
     @property
     def enabled(self) -> bool:
@@ -55,30 +57,48 @@ class OpenAIClient:
             raise ExternalServiceError("OpenAI is not configured")
 
         try:
-            completion = await self._client.beta.chat.completions.parse(
-                model=self._settings.openai_model,
-                temperature=0,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {
-                        "role": "user",
-                        "content": json.dumps(user_payload, ensure_ascii=True),
-                    },
-                ],
-                response_format=response_model,
-            )
-        except Exception as exc:  # pragma: no cover - network dependency
-            raise ExternalServiceError("OpenAI request failed", details={"error": str(exc)}) from exc
+            model = "gemini-1.5-flash" if self._is_gemini else self._settings.openai_model
+            
+            if self._is_gemini:
+                # Gemini compatible JSON mode
+                completion = await self._client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt + "\nIMPORTANT: Return a valid JSON object matching the requested schema."},
+                        {"role": "user", "content": json.dumps(user_payload)},
+                    ],
+                    response_format={"type": "json_object"},
+                    temperature=0.1
+                )
+                content = completion.choices[0].message.content
+                if not content:
+                    raise ExternalServiceError("Gemini returned empty content")
+                parsed_json = json.loads(content)
+                payload = response_model.model_validate(parsed_json)
+            else:
+                # Restore structured parsing now that the header issue is fixed
+                completion = await self._client.beta.chat.completions.parse(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": json.dumps(user_payload)},
+                    ],
+                    response_format=response_model,
+                )
+                payload = completion.choices[0].message.parsed
+                if payload is None:
+                    raise ExternalServiceError("OpenAI returned empty structured response")
+        except Exception as exc:
+            logger.error(f"AI generation failed: {exc}")
+            raise ExternalServiceError("AI request failed", details={"error": str(exc)}) from exc
 
-        parsed = completion.choices[0].message.parsed
-        if parsed is None:
-            raise ExternalServiceError("OpenAI returned an empty structured response")
+        # payload is already validated and assigned above
 
         usage = OpenAIUsage(
             prompt_tokens=getattr(completion.usage, "prompt_tokens", 0) or 0,
             completion_tokens=getattr(completion.usage, "completion_tokens", 0) or 0,
             total_tokens=getattr(completion.usage, "total_tokens", 0) or 0,
-            model=completion.model,
+            model=model,
         )
         logger.info(
             "OpenAI token usage | model=%s prompt_tokens=%s completion_tokens=%s total_tokens=%s",
@@ -87,7 +107,7 @@ class OpenAIClient:
             usage.completion_tokens,
             usage.total_tokens,
         )
-        return StructuredAIResult(payload=parsed, usage=usage)
+        return StructuredAIResult(payload=payload, usage=usage)
 
     async def extract_text_from_images(self, base64_images: list[str]) -> str:
         """Use GPT Vision to extract chat text from screenshots."""

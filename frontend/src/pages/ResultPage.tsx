@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Share2, Coffee, Lightbulb, TrendingUp, ChevronRight, 
   AlertTriangle, CheckCircle2, Calculator,
-  Zap, Target
+  Zap, Target, Gift, MessageCircle, MessageSquare, Sparkles
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -19,7 +19,8 @@ export default function ResultPage() {
     seriousness_score, suggestions,
     date_strategy, effort_level, evidence, reasoning,
     should_go_on_date, date_decision_reason,
-    boredom_level, psychological_insight, impression_strategy
+    boredom_level, psychological_insight, impression_strategy,
+    gift_ideas, chat_ideas, interest_level, messages
   } = result;
 
   const scoreValue = seriousness_score || 0;
@@ -135,13 +136,13 @@ export default function ResultPage() {
         </motion.div>
       </div>
 
-      {/* Psychological Deep-Dive */}
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="glass-card p-12 bg-zinc-900 text-white space-y-8 shadow-2xl border border-white/10"
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      {/* Psychological Deep-Dive & Evidence (Styled like image) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="glass-card p-12 bg-zinc-900 text-white space-y-8 shadow-2xl border border-white/10"
+        >
           <div className="space-y-6">
             <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.6em]">Psychological Deep-Dive</h3>
             <p className="text-2xl font-bold italic leading-relaxed text-zinc-200">
@@ -153,22 +154,34 @@ export default function ResultPage() {
                </p>
             </div>
           </div>
-          
-          <div className="space-y-6">
-            <h3 className="text-xs font-black text-primary uppercase tracking-[0.6em]">Behavioral Evidence</h3>
-            <div className="space-y-4">
+        </motion.div>
+
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="glass-card p-12 bg-zinc-900/90 text-white border-2 border-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.2)]"
+        >
+          <div className="space-y-8">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-black uppercase tracking-widest text-white">What This Means</h3>
+              <div className="px-6 py-2 bg-rose-500 rounded-xl text-xs font-black uppercase tracking-tighter">
+                Interest: {interest_level?.toUpperCase() || 'HIGH'}
+              </div>
+            </div>
+            
+            <div className="space-y-6">
                {evidence && evidence.map((e: string, idx: number) => (
                  <motion.div 
                    key={idx}
                    initial={{ opacity: 0, x: 20 }}
                    animate={{ opacity: 1, x: 0 }}
                    transition={{ delay: idx * 0.1 }}
-                   className="flex items-center gap-4 p-5 bg-white/5 rounded-2xl border border-white/5 group hover:bg-white/10 transition-all"
+                   className="flex items-start gap-4 group"
                  >
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">
-                      {idx + 1}
+                    <div className="mt-1">
+                      {idx % 3 === 0 ? <MessageSquare className="w-5 h-5 text-zinc-400" /> : idx % 3 === 1 ? <Sparkles className="w-5 h-5 text-zinc-400" /> : <Target className="w-5 h-5 text-zinc-400" />}
                     </div>
-                    <span className="text-zinc-300 font-bold text-sm tracking-tight">{e}</span>
+                    <span className="text-zinc-200 font-bold text-base tracking-tight leading-snug">{e}</span>
                  </motion.div>
                ))}
                {!evidence && (
@@ -176,8 +189,9 @@ export default function ResultPage() {
                )}
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
+      
 
       {/* Swipeable: How to Win Their Heart */}
       <div className="space-y-10">
@@ -272,23 +286,50 @@ export default function ResultPage() {
         </motion.div>
       </div>
 
+        {/* Bonus Insights: Chat Topics & Gift Ideas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="glass-card p-10 space-y-6 bg-zinc-900 text-white border border-white/10">
+            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.4em] flex items-center gap-3">
+              <MessageCircle className="w-4 h-4 text-primary" /> Chat Topics
+            </h3>
+            <div className="space-y-3">
+              {chat_ideas?.map((topic: string, i: number) => (
+                <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center gap-4 font-bold text-sm">
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  {topic}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="glass-card p-10 space-y-6 bg-zinc-900 text-white border border-white/10">
+            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.4em] flex items-center gap-3">
+              <Gift className="w-4 h-4 text-primary" /> Gifting Ideas
+            </h3>
+            <div className="space-y-3">
+              {gift_ideas?.map((gift: string, i: number) => (
+                <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center gap-4 font-bold text-sm">
+                  <div className="w-2 h-2 rounded-full bg-rose-500" />
+                  {gift}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
        {/* Behavioral Insights */}
        <div className="glass-card p-12 space-y-8 bg-white/80 border-2 border-white shadow-2xl">
           <h3 className="text-xl font-black text-zinc-900 uppercase tracking-widest flex items-center gap-4">
             <Lightbulb className="w-8 h-8 text-yellow-500" />
-            Behavioral Insight
+            Winning Strategy
           </h3>
           <div className="grid md:grid-cols-2 gap-10">
             {suggestions && suggestions.slice(0, 2).map((s: string, i: number) => (
-              <div key={i} className="p-8 rounded-3xl bg-zinc-50 border border-zinc-100 italic font-bold text-xl text-zinc-700 leading-relaxed shadow-inner">
+              <div key={i} className="p-8 rounded-3xl bg-zinc-50 border border-zinc-100 italic font-bold text-xl text-zinc-700 leading-relaxed shadow-inner flex items-start gap-4">
+                 <div className="mt-1"><Target className="w-6 h-6 text-primary" /></div>
                  “{s}”
               </div>
             ))}
-            {(!suggestions || suggestions.length === 0) && (
-              <div className="p-8 rounded-3xl bg-zinc-50 border border-zinc-100 italic font-bold text-xl text-zinc-700 leading-relaxed shadow-inner col-span-2">
-                 “They’re currently evaluating your social value before deciding their next major emotional move.”
-              </div>
-            )}
           </div>
        </div>
 

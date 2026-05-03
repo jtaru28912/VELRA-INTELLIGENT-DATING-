@@ -106,9 +106,40 @@ export default function HistoryPage() {
                     </span>
                     <span className="text-xs font-black text-zinc-400 uppercase tracking-[0.3em] italic">Archive #{history.length - idx}</span>
                   </div>
-                  <h3 className="text-zinc-800 font-bold text-xl leading-relaxed max-w-2xl italic">
-                    “{item.suggested_action}”
-                  </h3>
+                  <div className="space-y-4">
+                    <h3 className="text-zinc-800 font-bold text-xl leading-relaxed max-w-2xl italic">
+                      “{item.messages && item.messages.length > 0 ? (item.messages[0].length > 60 ? item.messages[0].substring(0, 60) + '...' : item.messages[0]) : (item.suggested_action || 'No message preview')}”
+                    </h3>
+                    {item.messages && item.messages.length > 0 && (
+                      <div className="space-y-3">
+                         <div className="flex flex-wrap gap-2">
+                           {item.messages.slice(0, 2).map((msg: string, i: number) => (
+                             <span key={i} className="text-[10px] font-black uppercase tracking-widest bg-zinc-50 text-zinc-400 px-3 py-1 rounded-lg border border-zinc-100">
+                               {msg.length > 30 ? msg.substring(0, 30) + '...' : msg}
+                             </span>
+                           ))}
+                           {item.messages.length > 2 && (
+                             <button 
+                               onClick={(e) => {
+                                 e.preventDefault();
+                                 e.stopPropagation();
+                                 const el = document.getElementById(`transcript-${item.id}`);
+                                 if (el) el.classList.toggle('hidden');
+                               }}
+                               className="text-[10px] font-black text-primary px-3 py-1 hover:underline"
+                             >
+                               +{item.messages.length - 2} more
+                             </button>
+                           )}
+                         </div>
+                         <div id={`transcript-${item.id}`} className="hidden space-y-2 pt-2 border-t border-zinc-100">
+                            {item.messages.map((msg: string, i: number) => (
+                              <p key={i} className="text-xs text-zinc-500 font-medium italic">{msg}</p>
+                            ))}
+                         </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="flex items-center gap-12 w-full md:w-auto justify-between md:justify-end">

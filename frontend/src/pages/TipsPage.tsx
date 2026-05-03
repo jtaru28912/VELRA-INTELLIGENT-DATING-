@@ -10,6 +10,7 @@ export default function TipsPage() {
   const { chat_history, profile_text } = location.state || {};
   const [loading, setLoading] = useState(false);
   const [tips, setTips] = useState<any>(null);
+  const [error, setError] = useState<string>('');
 
   const fetchTips = async (mode: 'general' | 'personalized') => {
     setLoading(true);
@@ -23,8 +24,9 @@ export default function TipsPage() {
         })
       });
       setTips(data);
-    } catch (err) {
-      console.error(err);
+      setError('');
+    } catch (err: any) {
+      setError(err.message || 'The strategist is currently unavailable. Try again in a moment.');
     } finally {
       setLoading(false);
     }
@@ -79,7 +81,13 @@ export default function TipsPage() {
         </div>
       )}
 
-      {tips && (
+       {error && (
+         <div className="glass-card p-6 border-rose-200 bg-rose-50/50 text-rose-600 font-bold text-center">
+            {error}
+         </div>
+       )}
+       
+       {tips && (
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

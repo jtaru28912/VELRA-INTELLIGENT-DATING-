@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, status, HTTPException
+from fastapi import APIRouter, Depends, Request, status, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
@@ -9,8 +9,6 @@ from app.features.chat_analysis.application.scoring import ScoringEngine
 from app.features.chat_analysis.application.service import ChatAnalysisService
 from app.features.chat_analysis.infrastructure.repository import ChatAnalysisRepository
 from app.features.chat_analysis.schemas import AnalyzeChatRequest, AnalyzeChatResponse
-from app.features.auth.dependencies import get_current_user
-from app.features.auth.models import User
 from app.features.auth.dependencies import get_current_user
 from app.features.auth.models import User
 
@@ -44,7 +42,8 @@ async def analyze_chat(
     service: ChatAnalysisService = Depends(get_chat_analysis_service),
     user: User = Depends(get_current_user),
 ) -> AnalyzeChatResponse:
-    logger.info("Analysis request received | user_id=%s content_length=%d", user.id, len(payload.messages))
+    logger.info("RECEIVED CHAT ANALYSIS REQUEST | user=%s | context=%s | messages=%d", 
+                user.email, payload.context, len(payload.messages))
     
     cache = request.app.state.cache
     # Check rate limit
@@ -58,22 +57,24 @@ async def analyze_chat(
     cache_key = cache.generate_cache_key(str(user.id), payload.messages)
     cached_data = await cache.get_json(cache_key)
     if cached_data:
-        logger.info("Cache hit for analysis result | user_id=%s", user.id)
+        logger.info("CACHE HIT | user=%s", user.email)
         return AnalyzeChatResponse(**cached_data)
 
     # Proceed with normal processing
-    logger.info("Starting fresh analysis | user_id=%s", user.id)
+    logger.info("STARTING FRESH ANALYSIS | user=%s", user.email)
     try:
         response = await service.analyze_chat(request=payload, session=session, user_id=user.id)
         
         # Store result in cache (1 hour TTL)
         await cache.set_json(cache_key, response.model_dump(), ttl_seconds=3600)
-        logger.info("Analysis completed and cached | user_id=%s", user.id)
+        
+        logger.info("ANALYSIS SUCCESSFUL | user=%s | score=%d | interest=%s", 
+                    user.email, response.seriousness_score, response.interest_level)
         return response
-    except HTTPException:
-        raise
     except Exception as e:
-        logger.exception("Chat analysis failed for user %s: %s", user.id, str(e))
+        logger.error("ANALYSIS FAILED | user=%s | error=%s", user.email, str(e), exc_info=True)
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(status_code=500, detail="Analysis failed")
 
 

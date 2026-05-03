@@ -27,7 +27,8 @@ export default function AuthCallback() {
       
       // Sync with our backend
       try {
-        const response = await fetch('http://localhost:8000/auth/google/sync', {
+        const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:10000';
+        const response = await fetch(`${BASE_URL}/auth/google/sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 

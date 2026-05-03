@@ -22,11 +22,12 @@ class Settings(BaseSettings):
 
     gemini_api_key: str | None = None
 
-    use_chroma_http: bool = True
+    use_chroma_http: bool = False
     chroma_host: str = "chroma"
     chroma_port: int = 8000
     chroma_ssl: bool = False
     chroma_persist_directory: str = "./.chroma"
+    chroma_collection_name: str = "chat_analyses"
 
     google_client_id: str | None = None
     google_client_secret: str | None = None
@@ -49,7 +50,7 @@ class Settings(BaseSettings):
 
     @property
     def openai_enabled(self) -> bool:
-        return bool(self.openai_api_key)
+        return bool(self.openai_api_key or self.gemini_api_key)
 
 
 @lru_cache

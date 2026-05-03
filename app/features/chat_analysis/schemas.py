@@ -7,6 +7,7 @@ class AnalyzeChatRequest(BaseModel):
     messages: list[str] = Field(default=[], max_length=200)
     images: list[str] = Field(default=[], max_length=10) # base64 or urls
     context: str = Field(..., min_length=2, max_length=64)
+    persona: str | None = None
     profile_id: str | None = None
 
     @field_validator("messages")
@@ -96,6 +97,29 @@ class DateStrategy(BaseModel):
     type: str = "coffee"
     justification: str = "Standard fallback recommendation"
 
+class AIStrategyGeneration(BaseModel):
+    seriousness_score: int = Field(..., ge=0, le=100)
+    interest_level: str
+    behavioral_pattern: list[str]
+    emotional_investment: str
+    risk_level: str
+    evidence: list[str]
+    reasoning: str
+    date_budget: str
+    date_type: str
+    date_justification: str
+    impression_strategy: list[str]
+    suggestions: list[str]
+    replies: list[str]
+    effort_level: str
+    should_go_on_date: bool
+    date_decision_reason: str
+    boredom_level: str
+    psychological_insight: str
+    gift_ideas: list[str]
+    chat_ideas: list[str]
+
+
 class AnalyzeChatResponse(BaseModel):
     seriousness_score: int
     interest_level: str
@@ -113,6 +137,9 @@ class AnalyzeChatResponse(BaseModel):
     date_decision_reason: str = "The vibe is consistent and interest is verified."
     boredom_level: str = "low"
     psychological_insight: str = ""
+    gift_ideas: list[str] = []
+    chat_ideas: list[str] = []
+    messages: list[str] = []
 
 
 # --- TIPS ENGINE ---

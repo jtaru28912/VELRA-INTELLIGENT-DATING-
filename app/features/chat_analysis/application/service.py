@@ -136,7 +136,8 @@ class ChatAnalysisService:
             features=features_dict,
             prediction_interest=sanitized_interest,
             seriousness_score=score_result.score,
-            history=merged_history
+            history=merged_history,
+            persona=request.persona or ""
         )
         
         await self._cache.add_message_to_history(str(user_id), request.messages)
@@ -184,6 +185,9 @@ class ChatAnalysisService:
         user_credits.remaining -= 1
         await session.commit()
 
+        # Populate messages in response for history persistence
+        response.messages = request.messages
+        
         return response
 
     async def get_history(
@@ -203,7 +207,11 @@ class ChatAnalysisService:
                 risk_level="low",
                 date_strategy=DateStrategy(),
                 impression_strategy=[],
-                suggestions=r.insights.split(" ") if r.insights else []
+                suggestions=r.insights.split(" ") if r.insights else [],
+                evidence=["Historical record"],
+                reasoning="Legacy analysis record from previous session.",
+                gift_ideas=[],
+                chat_ideas=[]
             )
             for r in records
         ]

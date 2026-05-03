@@ -12,6 +12,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:10000';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem('velra_token'));
@@ -38,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    const response = await fetch('http://localhost:8000/auth/login', {
+    const response = await fetch(`${BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -46,7 +47,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Login failed');
+      const detail = typeof error.detail === 'string' 
+        ? error.detail 
+        : Array.isArray(error.detail)
+          ? error.detail.map((e: any) => e.msg).join(', ')
+          : JSON.stringify(error.detail);
+      throw new Error(detail || 'Login failed');
     }
 
     const data = await response.json();
@@ -56,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (email: string, password: string) => {
-    const response = await fetch('http://localhost:8000/auth/signup', {
+    const response = await fetch(`${BASE_URL}/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -64,7 +70,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || 'Signup failed');
+      const detail = typeof error.detail === 'string' 
+        ? error.detail 
+        : Array.isArray(error.detail)
+          ? error.detail.map((e: any) => e.msg).join(', ')
+          : JSON.stringify(error.detail);
+      throw new Error(detail || 'Signup failed');
     }
 
     const data = await response.json();
@@ -76,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const acceptTc = async () => {
     if (!token) return;
     try {
-      const response = await fetch('http://localhost:8000/auth/me/accept-tc', {
+      const response = await fetch(`${BASE_URL}/auth/me/accept-tc`, {
         method: 'PATCH',
         headers: { 
           'Authorization': `Bearer ${token}`
