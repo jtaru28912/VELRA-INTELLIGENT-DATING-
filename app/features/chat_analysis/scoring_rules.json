@@ -1,0 +1,23 @@
+{
+  "base_score": 50,
+  "min_score": 0,
+  "max_score": 100,
+  "low_initiation": {
+    "threshold": 40,
+    "penalty": 20,
+    "flag": "low effort"
+  },
+  "no_future_planning": {
+    "threshold": 0,
+    "penalty": 25,
+    "flag": "avoidance"
+  },
+  "decreasing_message_length": {
+    "penalty": 15,
+    "flag": "low effort"
+  },
+  "high_sentiment": {
+    "threshold": 0.65,
+    "bonus": 20
+  }
+}
