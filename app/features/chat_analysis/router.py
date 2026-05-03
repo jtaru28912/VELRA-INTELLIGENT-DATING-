@@ -70,6 +70,8 @@ async def analyze_chat(
         await cache.set_json(cache_key, response.model_dump(), ttl_seconds=3600)
         logger.info("Analysis completed and cached | user_id=%s", user.id)
         return response
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Chat analysis failed for user %s: %s", user.id, str(e))
         raise HTTPException(status_code=500, detail="Analysis failed")

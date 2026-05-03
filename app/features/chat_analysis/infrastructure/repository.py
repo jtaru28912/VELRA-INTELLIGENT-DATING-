@@ -58,7 +58,7 @@ class ChatAnalysisRepository:
     ) -> list[ChatAnalysisRecord]:
         statement = (
             select(ChatAnalysisRecord)
-            .where(ChatAnalysisRecord.user_id == cast(user_id, Uuid))
+            .where(ChatAnalysisRecord.user_id == user_id)
             .order_by(ChatAnalysisRecord.created_at.desc())
         )
         result = await session.execute(statement)
@@ -68,7 +68,7 @@ class ChatAnalysisRepository:
         session: AsyncSession,
         user_id: str,
     ) -> Credit | None:
-        statement = select(Credit).where(Credit.user_id == cast(user_id, Uuid))
+        statement = select(Credit).where(Credit.user_id == user_id)
         result = await session.execute(statement)
         return result.scalar_one_or_none()
 
@@ -93,8 +93,8 @@ class ChatAnalysisRepository:
         from app.features.chat_analysis.infrastructure.models import ChatAnalysisRecord
         from sqlalchemy import delete
         statement = delete(ChatAnalysisRecord).where(
-            ChatAnalysisRecord.id == cast(analysis_id, Uuid),
-            ChatAnalysisRecord.user_id == cast(user_id, Uuid)
+            ChatAnalysisRecord.id == analysis_id,
+            ChatAnalysisRecord.user_id == user_id
         )
         result = await session.execute(statement)
         await session.commit()

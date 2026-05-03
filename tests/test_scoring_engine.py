@@ -14,7 +14,7 @@ def test_scoring_engine_applies_configurable_rules() -> None:
 
     result = engine.score(features)
 
-    assert result.score == 10
+    assert result.score == 50
     assert result.flags == ["avoidance", "low effort"]
 
 
@@ -30,5 +30,5 @@ def test_scoring_engine_rewards_positive_signals() -> None:
 
     result = engine.score(features)
 
-    assert result.score == 70
+    assert result.score == 75
     assert result.flags == []

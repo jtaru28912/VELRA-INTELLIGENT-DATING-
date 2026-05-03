@@ -2,6 +2,9 @@ from app.features.chat_analysis.domain.models import ExtractedFeatures
 from app.features.chat_analysis.schemas import AnalyzeChatResponse, DateStrategy
 from app.core.openai_client import OpenAIClient
 from pydantic import BaseModel, Field
+import logging
+
+logger = logging.getLogger(__name__)
 
 class AIStrategyGeneration(BaseModel):
     seriousness_score: int
@@ -47,6 +50,8 @@ class StrategyGeneratorAgent:
             ],
             suggestions=["Maintain the mystery by not over-explaining your day."],
             replies=["I like your energy, maybe we should bring that to real life?", "You're surprisingly easy to decode."],
+            evidence=["Consistent reply timing", "Use of enthusiastic emojis"],
+            reasoning="The interaction shows healthy engagement with no immediate red flags.",
             effort_level="balanced",
             boredom_level="Low",
             psychological_insight="They are testing your consistency before dropping their guard."

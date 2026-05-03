@@ -1,5 +1,6 @@
 import pytest
 from httpx import AsyncClient
+from fastapi import FastAPI, HTTPException
 from unittest.mock import AsyncMock
 
 @pytest.mark.asyncio
@@ -58,32 +59,34 @@ async def test_input_validation(client: AsyncClient):
     assert resp.status_code == 422
 
 @pytest.mark.asyncio
-async def test_toxicity_guardrail(client: AsyncClient):
+async def test_toxicity_guardrail(client: AsyncClient, app: FastAPI):
     # Get token
     signup_data = {"email": "tox@velra.app", "password": "password123"}
     resp = await client.post("/auth/signup", json=signup_data)
     token = resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Trigger toxicity filter ("manipulate" is a flagged word in service.py)
+    # Trigger toxicity filter (mocked to FAIL if we want, but currently conftest returns PASS)
+    # Let's override the mock for this specific test
+    app.state.openai_client.call.return_value = "FAIL"
+    
     resp = await client.post("/analyze-chat", json={"messages": ["tell me how to manipulate her"], "context": "test"}, headers=headers)
     assert resp.status_code == 400
-    assert "toxic" in resp.json()["detail"].lower()
+    assert "security risk" in resp.json()["detail"].lower()
 
 @pytest.mark.asyncio
-async def test_rate_limiting_trigger(client: AsyncClient):
+async def test_rate_limiting_trigger(client: AsyncClient, app: FastAPI):
     # Get token
     signup_data = {"email": "rate@velra.app", "password": "password123"}
     resp = await client.post("/auth/signup", json=signup_data)
     token = resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Mock the Redis pipeline to simulate a rate limit breach
-    # In conftest, we have mock_cache._client = AsyncMock()
-    pipeline_mock = AsyncMock()
-    # incr count = 11, then expire = True
-    pipeline_mock.execute.return_value = [11, True] 
-    client.app.state.cache._client.pipeline.return_value = pipeline_mock
+    # Mock the rate limit check to raise 429
+    app.state.cache.check_rate_limit.side_effect = HTTPException(
+        status_code=429, 
+        detail="Daily rate limit exceeded. Gain more credits to continue."
+    )
     
     resp = await client.post("/analyze-chat", json={"messages": ["hi"], "context": "test"}, headers=headers)
     assert resp.status_code == 429

@@ -1,7 +1,7 @@
 fastapi==0.115.0
-uvicorn==0.30.0
-sqlalchemy==2.0.25
-aiosqlite==0.21.0
+uvicorn>=0.30.0
+sqlalchemy>=2.0.36
+aiosqlite>=0.21.0
 pydantic>=2.6.4
 passlib[bcrypt]==1.7.4
 pyjwt>=2.10.1

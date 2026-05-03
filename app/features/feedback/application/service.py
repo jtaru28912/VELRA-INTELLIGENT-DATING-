@@ -21,7 +21,7 @@ class LearningLoopService:
         
         # 2. Extract pattern from analysis
         # For the "Full Learning Loop", we find the analysis and extract the pattern
-        analysis_stmt = select(ChatAnalysisRecord).where(ChatAnalysisRecord.id == cast(request.analysis_id, Uuid))
+        analysis_stmt = select(ChatAnalysisRecord).where(ChatAnalysisRecord.id == request.analysis_id)
         analysis_res = await session.execute(analysis_stmt)
         analysis = analysis_res.scalar_one_or_none()
         
@@ -53,7 +53,7 @@ class LearningLoopService:
         
         # 4. Update new Hybrid TrainingData loop
         training_stmt = update(TrainingData).where(
-            (TrainingData.analysis_id == cast(request.analysis_id, Uuid)) & (TrainingData.user_id == cast(user_id, Uuid))
+            (TrainingData.analysis_id == request.analysis_id) & (TrainingData.user_id == user_id)
         ).values(correctness=request.is_helpful)
         await session.execute(training_stmt)
         

@@ -1,0 +1,17 @@
+.env
+pycache
+chroma_db
+__pycache__
+venv
+frontend/node_modules
+frontend/.next
+frontend/.turbo
+frontend/out
+
+node_modules    
+frontend/public/uploads
+frontend/package-lock.json
+frontend/yarn-error.log
+frontend/package-lock.json
+
+
